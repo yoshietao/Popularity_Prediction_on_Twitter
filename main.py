@@ -3,7 +3,7 @@ from collections import OrderedDict
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import shuffle
-
+from sklearn.metrics import mean_squared_error
 
 
 
@@ -24,8 +24,11 @@ def Q2():
 
 def q2(d):		#d[0] = x, d[1] = y
 	lrm = LinearRegression(fit_intercept=True, normalize=True)
-	x,y = shuffle(d[0],d[1],random_state=42)
-
+	#x,y = shuffle(d[0],d[1],random_state=42)
+	x = d[0]
+	y = d[1]
+	#print (x,y)
+	print(mean_squared_error(y,lrm.fit(x,y).predict(x)))
 
 
 
