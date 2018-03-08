@@ -24,7 +24,7 @@ def Q2():
 
 def q2(d):		#d[0] = x, d[1] = y
 	lrm = LinearRegression(fit_intercept=True, normalize=True)
-	x,y = shuffle(x,y,random_state=42)
+	x,y = shuffle(d[0],d[1],random_state=42)
 
 
 
