@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import OrderedDict
+import os 
 pst_tz = pytz.timezone('US/Pacific')
 
 '''
@@ -35,6 +36,7 @@ def load_q1_2(filename):
 		return np.load('./data/'+filename+'Q1_2x.npy'),np.load('./data/'+filename+'Q1_2y.npy')
 	else:
 		print('Parsing Q1_2 data...')
+		os.makedirs('./data')
 		x = OrderedDict()
 		y = OrderedDict()
 		with open(filename+'.txt') as data:
