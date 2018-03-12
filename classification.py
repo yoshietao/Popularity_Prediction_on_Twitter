@@ -13,6 +13,9 @@ from sklearn.decomposition import TruncatedSVD
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.metrics import confusion_matrix, auc, roc_curve
 from sklearn import svm, metrics
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
 from nltk.stem.snowball import SnowballStemmer
 from nltk.corpus import stopwords
 import matplotlib.pyplot as plt
@@ -31,8 +34,9 @@ def generate_X_y(filename):
             line = json.loads(line)
             text = line['title']
             location = line['tweet']['user']['location']
-            if counter > 1000:
-                break
+            #print(counter)
+            #if counter > 10000:
+            #    break
             #if counter > 100:
                 #print(text)
                 #print(location)
@@ -43,6 +47,7 @@ def generate_X_y(filename):
                 X_list.append(text)
                 y_list.append(1.)
             counter += 1
+    print('size of data: ', len(y_list))
     return X_list, y_list
 
 def generate_vectorizer(min_df, max_df=1.0):
@@ -104,11 +109,45 @@ def report_results(y_true, y_pred, y_pred_proba, class_names):
     plot_confusion_matrix(cm, class_names=class_names)
 
 def svm_analysis(X_train, y_train, X_test, y_test, class_names):
-    svm_clf = svm.SVC(C=1000, probability=True)
+    print('###########################')
+    print('Support Vector Machine: ')
+    print('###########################')
+    svm_clf = svm.SVC(C=1., probability=True)
     svm_clf.fit(X_train, y_train)
     y_pred = svm_clf.predict(X_test)
     y_pred_proba = svm_clf.predict_proba(X_test)
     report_results(y_test, y_pred, y_pred_proba, class_names)
+
+def log_analysis(X_train, y_train, X_test, y_test, class_names):
+    print('###########################')
+    print('Logistic Regression: ')
+    print('###########################')
+    log_clf = LogisticRegression(C=1., random_state=42)
+    log_clf.fit(X_train, y_train)
+    y_pred = log_clf.predict(X_test)
+    y_pred_proba = log_clf.predict_proba(X_test)
+    report_results(y_test, y_pred, y_pred_proba, class_names)
+
+def rf_analysis(X_train, y_train, X_test, y_test, class_names):
+    print('###########################')
+    print('Random Forest: ')
+    print('###########################')
+    rf_clf = RandomForestClassifier(max_depth=10, random_state=42)
+    rf_clf.fit(X_train, y_train)
+    y_pred = rf_clf.predict(X_test)
+    y_pred_proba = rf_clf.predict_proba(X_test)
+    report_results(y_test, y_pred, y_pred_proba, class_names)
+
+def mlp_analysis(X_train, y_train, X_test, y_test, class_names):
+    print('###########################')
+    print('Neural Network: ')
+    print('###########################')
+    mlp_clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(24, 12), random_state=42)
+    mlp_clf.fit(X_train, y_train)
+    y_pred = mlp_clf.predict(X_test)
+    y_pred_proba = mlp_clf.predict_proba(X_test)
+    report_results(y_test, y_pred, y_pred_proba, class_names)
+
 ###########################
 # Main
 ###########################
@@ -128,11 +167,15 @@ def main():
     X_train_tf = tf_transformer.fit_transform(X_train_counts)
     X_test_tf = tf_transformer.transform(X_test_counts)
     
-    svd = TruncatedSVD(n_components=50, algorithm='randomized', n_iter=10, random_state=42)
+    svd = TruncatedSVD(n_components=20, algorithm='randomized', n_iter=10, random_state=42)
     X_train_tf_svd = svd.fit_transform(X_train_tf)
     X_test_tf_svd = svd.transform(X_test_tf)
-    class_names = ['WA', 'MA']
-    svm_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    class_names = ['Washington', 'Massachusetts']
+    #svm_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    #log_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    #rf_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    mlp_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+
 if __name__ == "__main__":
     main()
 
