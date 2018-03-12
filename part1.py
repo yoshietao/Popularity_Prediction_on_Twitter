@@ -29,7 +29,7 @@ def Q1_2():
 	q2(d_nfl)
 	q2(d_superbowl)
 
-def q2(d):		#d[0] = x, d[1] = y
+def q2(d,select=None):		#d[0] = x, d[1] = y
 	lrm = LinearRegression(fit_intercept=True, normalize=False)
 	#x,y = shuffle(d[0],d[1],random_state=42)
 	x,y = d[0],d[1]
@@ -41,13 +41,28 @@ def q2(d):		#d[0] = x, d[1] = y
 	#func.analysis_q2(y,y_pred)
 
 	fig,ax = plt.subplots()
-	ax.scatter(np.arange(len(y)),y_pred,s=5)
-	ax.scatter(np.arange(len(y)),y,s=5)
+	ax.scatter(np.arange(len(y)),y,s=5,label='true')
+	ax.scatter(np.arange(len(y)),y_pred,s=5,label='fitted')
+	ax.legend(loc=2)
 	plt.show()
+
+	if select is not None:
+		for i in select:
+			fig,ax = plt.subplots()
+			ax.scatter(x[:,i],y,s=4,label='x'+str(i+1))
+			ax.legend(loc=2)
+			plt.show()
+
+def Q1_3():
+	d_nfl = func.load_q1_3('tweets_#nfl')
+	d_superbowl = func.load_q1_3('tweets_#superbowl')
+	q2([d_nfl[0],d_nfl[1]],[0,2,3])
+	q2([d_superbowl[0],d_superbowl[1]],[0,2,3])
 
 def main():
 	#Q1_1()
-	Q1_2()
+	#Q1_2()
+	Q1_3()
 
 
 if __name__ == '__main__':
