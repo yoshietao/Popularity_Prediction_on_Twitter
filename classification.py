@@ -7,9 +7,10 @@
 ###########################
 import json
 import numpy as np
+from pathlib import Path
 from sklearn.feature_extraction import text
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.decomposition import TruncatedSVD
+from sklearn.decomposition import TruncatedSVD, NMF
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.metrics import confusion_matrix, auc, roc_curve
 from sklearn import svm, metrics
@@ -22,33 +23,42 @@ import matplotlib.pyplot as plt
 from string import punctuation
 import collections
 import itertools
-
+import os
 ###########################
 # Define Functions
 ###########################
 def generate_X_y(filename):
-    X_list, y_list = [], []
-    counter = 0
-    with open(filename+'.txt') as data:
-        for line in data:
-            line = json.loads(line)
-            text = line['title']
-            location = line['tweet']['user']['location']
-            #print(counter)
-            #if counter > 10000:
-            #    break
-            #if counter > 100:
-                #print(text)
-                #print(location)
-            if location.find('Washington') is not -1 or location.find('WA') is not -1 or location.find('Seattle') is not -1 or location.find('DC') is not -1 or location.find('Wa') is not -1:
-                X_list.append(text)
-                y_list.append(0.)
-            elif location.find('Massachusetts') is not -1 or location.find('MA') is not -1 or location.find('Boston') is not -1 or location.find('Ma') is not -1:
-                X_list.append(text)
-                y_list.append(1.)
-            counter += 1
-    print('size of data: ', len(y_list))
-    return X_list, y_list
+    if Path('./data/X.npy').exists() and Path('./data/y.npy').exists():
+        print('data found...')
+        return np.load('./data/X.npy'), np.load('./data/y.npy')
+    else:
+        if not Path('./data').exists():
+            os.makedirs('./data')
+        print('create data...')
+        X_list, y_list = [], []
+        counter = 0
+        with open(filename+'.txt') as data:
+            for line in data:
+                line = json.loads(line)
+                text = line['title']
+                location = line['tweet']['user']['location']
+                #print(counter)
+                #if counter > 1000:
+                #    break
+                #if counter > 100:
+                    #print(text)
+                    #print(location)
+                if location.find('Washington') is not -1 or location.find('WA') is not -1 or location.find('Seattle') is not -1 or location.find('DC') is not -1 or location.find('Wa') is not -1:
+                    X_list.append(text)
+                    y_list.append(0.)
+                elif location.find('Massachusetts') is not -1 or location.find('MA') is not -1 or location.find('Boston') is not -1 or location.find('Ma') is not -1:
+                    X_list.append(text)
+                    y_list.append(1.)
+                counter += 1
+        #print('size of data: ', len(y_list))
+        np.save('./data/X.npy', np.array(X_list))
+        np.save('./data/y.npy', np.array(y_list))
+        return X_list, y_list
 
 def generate_vectorizer(min_df, max_df=1.0):
     stop_words_skt = text.ENGLISH_STOP_WORDS
@@ -132,7 +142,7 @@ def rf_analysis(X_train, y_train, X_test, y_test, class_names):
     print('###########################')
     print('Random Forest: ')
     print('###########################')
-    rf_clf = RandomForestClassifier(max_depth=50, random_state=42)
+    rf_clf = RandomForestClassifier(max_depth=30, random_state=42)
     rf_clf.fit(X_train, y_train)
     y_pred = rf_clf.predict(X_test)
     y_pred_proba = rf_clf.predict_proba(X_test)
@@ -155,7 +165,8 @@ def main():
     print('starting part 2...')
     X, y = generate_X_y('tweets_#superbowl')
     #print(len(X_list), len(y_list))
-    #print(y_list)
+    #print(y)
+    
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
     # create TFxIDF vector representations
     vectorizer = generate_vectorizer(min_df=5)
@@ -166,16 +177,21 @@ def main():
 
     X_train_tf = tf_transformer.fit_transform(X_train_counts)
     X_test_tf = tf_transformer.transform(X_test_counts)
-    
-    svd = TruncatedSVD(n_components=30, algorithm='randomized', n_iter=10, random_state=42)
+    print(X_train_tf.shape)
+    '''
+    svd = TruncatedSVD(n_components=100, algorithm='randomized', n_iter=10, random_state=42)
     X_train_tf_svd = svd.fit_transform(X_train_tf)
     X_test_tf_svd = svd.transform(X_test_tf)
+    '''
+    nmf = NMF(n_components=1000, init='random', random_state=42)
+    X_train_tf_nmf = nmf.fit_transform(X_train_tf)
+    X_test_tf_nmf = nmf.transform(X_test_tf)
     class_names = ['Washington', 'Massachusetts']
-    svm_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    #svm_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
     #log_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-    #rf_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-    mlp_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-
+    rf_analysis(X_train_tf_nmf, y_train, X_test_tf_nmf, y_test, class_names)
+    #mlp_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    
 if __name__ == "__main__":
     main()
 
