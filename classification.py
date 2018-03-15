@@ -27,8 +27,8 @@ import os
 ###########################
 # Define Functions
 ###########################
-def generate_X_y(filename):
-    if Path('./data/X.npy').exists() and Path('./data/y.npy').exists():
+def generate_X_y(filename, recreate=False):
+    if Path('./data/X.npy').exists() and Path('./data/y.npy').exists() and not recreate:
         print('data found...')
         return np.load('./data/X.npy'), np.load('./data/y.npy')
     else:
@@ -48,14 +48,15 @@ def generate_X_y(filename):
                 #if counter > 100:
                     #print(text)
                     #print(location)
-                if location.find('Washington') is not -1 or location.find('WA') is not -1 or location.find('Seattle') is not -1 or location.find('DC') is not -1 or location.find('Wa') is not -1:
+                if location.find('Washington') is not -1 or location.find('WA') is not -1 or location.find('Seattle') is not -1:
                     X_list.append(text)
                     y_list.append(0.)
-                elif location.find('Massachusetts') is not -1 or location.find('MA') is not -1 or location.find('Boston') is not -1 or location.find('Ma') is not -1:
+                elif location.find('Massachusetts') is not -1 or location.find('MA') is not -1 or location.find('Boston') is not -1:
                     X_list.append(text)
                     y_list.append(1.)
-                counter += 1
-        #print('size of data: ', len(y_list))
+                    counter += 1
+        print('size of WA data: ', len(y_list) - counter)
+        print('size of MA data: ', counter)
         np.save('./data/X.npy', np.array(X_list))
         np.save('./data/y.npy', np.array(y_list))
         return X_list, y_list
@@ -96,7 +97,7 @@ def plot_roc(fpr, tpr):
     ax.plot(fpr, tpr, lw=2, label='area under curve = %0.4f' % roc_auc)
     ax.grid(color='0.7', linestyle='--', linewidth=1)
     ax.set_xlim([-0.1, 1.1])
-    ax.set_ylim([0.0, 1.05])
+    ax.set_ylim([-0.1, 1.1])
     ax.set_xlabel('False Positive Rate', fontsize=15)
     ax.set_ylabel('True Positive Rate', fontsize=15)
     ax.legend(loc='lower right')
@@ -122,7 +123,7 @@ def svm_analysis(X_train, y_train, X_test, y_test, class_names):
     print('###########################')
     print('Support Vector Machine: ')
     print('###########################')
-    svm_clf = svm.SVC(C=10000, probability=True)
+    svm_clf = svm.SVC(C=1000, probability=True)
     svm_clf.fit(X_train, y_train)
     y_pred = svm_clf.predict(X_test)
     y_pred_proba = svm_clf.predict_proba(X_test)
@@ -132,7 +133,7 @@ def log_analysis(X_train, y_train, X_test, y_test, class_names):
     print('###########################')
     print('Logistic Regression: ')
     print('###########################')
-    log_clf = LogisticRegression(C=10000, random_state=42)
+    log_clf = LogisticRegression(C=1000, random_state=42)
     log_clf.fit(X_train, y_train)
     y_pred = log_clf.predict(X_test)
     y_pred_proba = log_clf.predict_proba(X_test)
@@ -142,7 +143,7 @@ def rf_analysis(X_train, y_train, X_test, y_test, class_names):
     print('###########################')
     print('Random Forest: ')
     print('###########################')
-    rf_clf = RandomForestClassifier(max_depth=30, random_state=42)
+    rf_clf = RandomForestClassifier(max_depth=20, random_state=42)
     rf_clf.fit(X_train, y_train)
     y_pred = rf_clf.predict(X_test)
     y_pred_proba = rf_clf.predict_proba(X_test)
@@ -152,7 +153,7 @@ def mlp_analysis(X_train, y_train, X_test, y_test, class_names):
     print('###########################')
     print('Neural Network: ')
     print('###########################')
-    mlp_clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(64, 32), random_state=42)
+    mlp_clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(128, 64), random_state=42)
     mlp_clf.fit(X_train, y_train)
     y_pred = mlp_clf.predict(X_test)
     y_pred_proba = mlp_clf.predict_proba(X_test)
@@ -163,9 +164,7 @@ def mlp_analysis(X_train, y_train, X_test, y_test, class_names):
 ###########################
 def main():
     print('starting part 2...')
-    X, y = generate_X_y('tweets_#superbowl')
-    #print(len(X_list), len(y_list))
-    #print(y)
+    X, y = generate_X_y('tweets_#superbowl', False)
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
     # create TFxIDF vector representations
@@ -177,20 +176,20 @@ def main():
 
     X_train_tf = tf_transformer.fit_transform(X_train_counts)
     X_test_tf = tf_transformer.transform(X_test_counts)
-    print(X_train_tf.shape)
-    '''
-    svd = TruncatedSVD(n_components=100, algorithm='randomized', n_iter=10, random_state=42)
+    
+    svd = TruncatedSVD(n_components=50, algorithm='randomized', n_iter=10, random_state=42)
     X_train_tf_svd = svd.fit_transform(X_train_tf)
     X_test_tf_svd = svd.transform(X_test_tf)
     '''
-    nmf = NMF(n_components=1000, init='random', random_state=42)
+    nmf = NMF(n_components=200, init='random', random_state=42)
     X_train_tf_nmf = nmf.fit_transform(X_train_tf)
     X_test_tf_nmf = nmf.transform(X_test_tf)
+    '''
     class_names = ['Washington', 'Massachusetts']
-    #svm_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-    #log_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-    rf_analysis(X_train_tf_nmf, y_train, X_test_tf_nmf, y_test, class_names)
-    #mlp_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    svm_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    log_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    rf_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    mlp_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
     
 if __name__ == "__main__":
     main()
