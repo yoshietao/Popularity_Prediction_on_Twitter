@@ -3,9 +3,12 @@ from collections import OrderedDict
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import shuffle
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
+from sklearn.svm import SVC
+from sklearn.model_selection import KFold
+from sklearn.ensemble import RandomForestClassifier
 
 def Q1_1():
 	d_nfl = func.load_q1_1('tweets_#nfl')
@@ -53,16 +56,60 @@ def q2(d,select=None):		#d[0] = x, d[1] = y
 			ax.legend(loc=2)
 			plt.show()
 
+def k_fold_rmse(model,x,y):
+	kf = KFold(n_splits=10, random_state=42)
+	mae_test = 0
+	rmse_test  = 0
+	for train_index, test_index in kf.split(x):
+		X_train, X_test = x[train_index], x[test_index]
+		y_train, y_test = y[train_index], y[test_index]
+		model = model.fit(X_train,y_train)
+		y_test_pred  = model.predict(X_test)
+		rmse_test  += mean_squared_error(y_test,y_test_pred)
+		mae_test   += mean_absolute_error(y_test,y_test_pred)
+	print ((rmse_test/10)**0.5,mae_test/10)
+	return (rmse_test/10)**0.5
+
+def predict_period(x,y):
+	lrm = LinearRegression(fit_intercept=True, normalize=False)
+	k_fold_rmse(lrm,x,y)
+	svm = SVC()
+	k_fold_rmse(svm,x,y)
+	rf = RandomForestClassifier()
+	k_fold_rmse(rf,x,y)
+
+def q1_4(filename):
+	d1x, d1y, d2x, d2y, d3x, d3y = func.load_q1_4(filename)
+	predict_period(d1x,d1y)
+	predict_period(d2x,d2y)
+	predict_period(d3x,d3y)
+
+def q1_4_2():
+	d1x, d1y, d2x, d2y, d3x, d3y = func.load_q1_4_2()
+	k_fold_rmse(d1x,d1y)
+	k_fold_rmse(d2x,d2y)
+	k_fold_rmse(d3x,d3y)
+
 def Q1_3():
 	d_nfl = func.load_q1_3('tweets_#nfl')
 	d_superbowl = func.load_q1_3('tweets_#superbowl')
 	q2([d_nfl[0],d_nfl[1]],[0,2,3])
 	q2([d_superbowl[0],d_superbowl[1]],[0,2,3])
 
+def Q1_4():
+	q1_4('tweets_#gohawks')
+	q1_4('tweets_#gopatriots')
+	q1_4('tweets_#nfl')
+	q1_4('tweets_#patriots')
+	q1_4('tweets_#sb49')
+	q1_4('tweets_#superbowl')
+	q1_4_2()
+
 def main():
 	#Q1_1()
 	#Q1_2()
-	Q1_3()
+	#Q1_3()
+	Q1_4()
 
 
 if __name__ == '__main__':
