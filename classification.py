@@ -8,6 +8,7 @@
 import json
 import numpy as np
 from pathlib import Path
+from sklearn.preprocessing import StandardScaler
 from sklearn.feature_extraction import text
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.decomposition import TruncatedSVD, NMF
@@ -118,26 +119,68 @@ def report_results(y_true, y_pred, y_pred_proba, class_names):
     print('Plot Confusion Matrix')
     cm = metrics.confusion_matrix(y_true, y_pred)
     plot_confusion_matrix(cm, class_names=class_names)
+    
+def svd_selection(X_train, y_train, X_test, y_test, class_names):
+    index_list = [0]
+    X_train_r, X_test_r = X_train[:, np.array(index_list)], X_test[:, np.array(index_list)]
+    acc_best = log_analysis(X_train_r, y_train, X_test_r, y_test, class_names)
+    for i in range(1, 50, 1):
+        print('##########################')
+        print('component of index: ', i, 'is added...')
+        index_list.append(i)
+        X_train_r, X_test_r = X_train[:, np.array(index_list)], X_test[:, np.array(index_list)]
+        acc_cur = log_analysis(X_train_r, y_train, X_test_r, y_test, class_names)
+        print('currnet acc: ', acc_cur)
+        if acc_cur > acc_best:
+            acc_best = acc_cur
+        else:
+            print('component removed...')
+            index_list.pop()
+    index_list_pop = index_list[1:]
+    X_train_r, X_test_r = X_train[:, np.array(index_list_pop)], X_test[:, np.array(index_list_pop)]
+    acc_cur = log_analysis(X_train_r, y_train, X_test_r, y_test, class_names)
+    if acc_cur > acc_best:
+        print('index_list: ', index_list_pop)
+        print('best_acc: ', acc_cur)
+    else:
+        print('index_list', index_list)
+        print('best acc: ', acc_best)
 
 def svm_analysis(X_train, y_train, X_test, y_test, class_names):
     print('###########################')
     print('Support Vector Machine: ')
     print('###########################')
-    svm_clf = svm.SVC(C=1000, kernel='linear', probability=True)
+    svm_clf = svm.SVC(C=1000, probability=True)
     svm_clf.fit(X_train, y_train)
     y_pred = svm_clf.predict(X_test)
     y_pred_proba = svm_clf.predict_proba(X_test)
     report_results(y_test, y_pred, y_pred_proba, class_names)
 
-def log_analysis(X_train, y_train, X_test, y_test, class_names):
+def log_analysis(X_train, y_train, X_test, y_test, class_names, optimize=False, report=False):
     print('###########################')
     print('Logistic Regression: ')
     print('###########################')
-    log_clf = LogisticRegression(C=1000, random_state=42)
+    acc_best, c_best = -1, 100
+    if optimize:
+        for x in range(-3, 4):
+            c = pow(10, x)
+            log_clf = LogisticRegression(C=c, random_state=42)
+            acc = cross_val_score(log_clf, X_train, y_train, cv=10, scoring='accuracy')
+            if acc.mean() > acc_best:
+                acc_best = acc.mean()
+                c_best = c
+        print('Best C: ', c_best)
+        print('Best validation acc: ', acc_best)
+    
+    log_clf = LogisticRegression(C=c_best, random_state=42)
     log_clf.fit(X_train, y_train)
     y_pred = log_clf.predict(X_test)
     y_pred_proba = log_clf.predict_proba(X_test)
-    report_results(y_test, y_pred, y_pred_proba, class_names)
+    if report:
+        report_results(y_test, y_pred, y_pred_proba, class_names)
+    else:
+        return metrics.accuracy_score(y_test, y_pred)
+
 
 def rf_analysis(X_train, y_train, X_test, y_test, class_names):
     print('###########################')
@@ -146,7 +189,7 @@ def rf_analysis(X_train, y_train, X_test, y_test, class_names):
     acc_best, depth_best = -1, -1
     for d in range(10, 51, 10):
         rf_clf = RandomForestClassifier(max_depth=d, random_state=42)
-        acc = cross_val_score(rf_clf, X_train, y_train, cv=5, scoring='accuracy')
+        acc = cross_val_score(rf_clf, X_train, y_train, cv=10, scoring='accuracy')
         if acc.mean() > acc_best:
             acc_best = acc.mean()
             depth_best = d
@@ -162,7 +205,7 @@ def mlp_analysis(X_train, y_train, X_test, y_test, class_names):
     print('###########################')
     print('Neural Network: ')
     print('###########################')
-    mlp_clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(128, 64), random_state=42)
+    mlp_clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(128, 64, 32), random_state=42)
     mlp_clf.fit(X_train, y_train)
     y_pred = mlp_clf.predict(X_test)
     y_pred_proba = mlp_clf.predict_proba(X_test)
@@ -185,19 +228,27 @@ def main():
 
     X_train_tf = tf_transformer.fit_transform(X_train_counts)
     X_test_tf = tf_transformer.transform(X_test_counts)
-    
+    '''
     svd = TruncatedSVD(n_components=50, algorithm='randomized', n_iter=10, random_state=42)
     X_train_tf_svd = svd.fit_transform(X_train_tf)
     X_test_tf_svd = svd.transform(X_test_tf)
     '''
-    nmf = NMF(n_components=200, init='random', random_state=42)
+    nmf = NMF(n_components=50, init='random', random_state=42)
     X_train_tf_nmf = nmf.fit_transform(X_train_tf)
     X_test_tf_nmf = nmf.transform(X_test_tf)
-    '''
+
+    scaler = StandardScaler(with_mean=False, with_std=True)
+
+    #X_train_tf_nmf[X_train_tf_nmf == 0.0] = 10**-3
+    X_train_tf_nmf_log = scaler.fit_transform(X_train_tf_nmf)
+    #X_test_tf_nmf[X_test_tf_nmf == 0.0] = 10**-3
+    X_test_tf_nmf_log = scaler.fit_transform(X_test_tf_nmf)
+
     class_names = ['Washington', 'Massachusetts']
+    #svd_selection(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
     #svm_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-    #log_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-    rf_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    log_analysis(X_train_tf_nmf_log, y_train, X_test_tf_nmf_log, y_test, class_names, False, True)
+    #rf_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
     #mlp_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
     
 if __name__ == "__main__":
