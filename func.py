@@ -96,8 +96,8 @@ def load_q1_3(filename):
 				x[index][1] += int(line['metrics']['citations']['total'])
 				x[index][2] += float(line['author']['followers'])
 				x[index][3] += int(line['metrics']['momentum'])
-				#if int(line['tweet']['user']['friends_count']) > x[index][4]:
-				#	x[index][4] = int(line['tweet']['user']['friends_count'])
+				if int(line['tweet']['user']['friends_count']) > x[index][4]:
+					x[index][4] = int(line['tweet']['user']['friends_count'])
 				#x[index][3] += int(line['metrics']['impressions'])
 				#if float(line['metrics']['impressions'])>x[index][3]:
 				#	x[index][3] = float(line['metrics']['impressions'])
@@ -109,6 +109,76 @@ def load_q1_3(filename):
 		np.save('./data/'+filename+'Q1_3y.npy',y[1:])
 		#print(x,y,x.shape,y.shape)
 		return np.load('./data/'+filename+'Q1_3x.npy'), np.load('./data/'+filename+'Q1_3y.npy')
+
+def load_q1_4(filename):
+	if Path('./data/'+filename+'Q1_4x3.npy').exists():
+		print('Already have Q1_4 data.')
+		return np.load('./data/'+filename+'Q1_4x1.npy'),np.load('./data/'+filename+'Q1_4y1.npy'),np.load('./data/'+filename+'Q1_4x2.npy'),np.load('./data/'+filename+'Q1_4y2.npy'),np.load('./data/'+filename+'Q1_4x3.npy'),np.load('./data/'+filename+'Q1_4y3.npy')
+	else:
+		print('Parsing Q1_4 data:'+filename+'...')
+		if not Path('./data').exists():
+			print('Making directory: data/')
+			os.makedirs('./data')
+		x1 = OrderedDict()
+		y1 = OrderedDict()
+		x2 = OrderedDict()
+		y2 = OrderedDict()
+		x3 = OrderedDict()
+		y3 = OrderedDict()
+		for i in range(14,32):
+			for j in range(24):
+				x1['01-'+str(i)+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
+		for j in range(8):
+			x1['02-01'+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
+		for j in range(8,21):
+			x2['02-01'+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
+		for j in range(21,24):
+			x3['02-01'+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
+		for i in range(2,7):
+			for j in range(24):
+				x3['02-'+'{0:02d}'.format(i)+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
+		for j in range(11):
+			x3['02-07'+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
+		with open(filename+'.txt') as data:
+			for line in data:
+				line = json.loads(line)
+				index = datetime.datetime.fromtimestamp(line['citation_date'], pst_tz).strftime('%Y-%m-%d %H:%M:%S')[5:13]
+				index1 = int(index[:2])*31*24+int(index[3:5])*24+int(index[6:8])
+				if index1 < 1520:
+					x1[index][0] += 1
+					x1[index][1] += int(line['metrics']['citations']['total'])
+					x1[index][2] += float(line['author']['followers'])
+					x1[index][3] += int(line['metrics']['momentum'])
+					if int(line['tweet']['user']['friends_count']) > x1[index][4]:
+						x1[index][4] = int(line['tweet']['user']['friends_count'])
+				elif index1 > 1532:
+					x3[index][0] += 1
+					x3[index][1] += int(line['metrics']['citations']['total'])
+					x3[index][2] += float(line['author']['followers'])
+					x3[index][3] += int(line['metrics']['momentum'])
+					if int(line['tweet']['user']['friends_count']) > x3[index][4]:
+						x3[index][4] = int(line['tweet']['user']['friends_count'])
+				else:
+					x2[index][0] += 1
+					x2[index][1] += int(line['metrics']['citations']['total'])
+					x2[index][2] += float(line['author']['followers'])
+					x2[index][3] += int(line['metrics']['momentum'])
+					if int(line['tweet']['user']['friends_count']) > x2[index][4]:
+						x2[index][4] = int(line['tweet']['user']['friends_count'])
+		x1 = np.array(list(x1.values())).astype('int')
+		x2 = np.array(list(x2.values())).astype('int')
+		x3 = np.array(list(x3.values())).astype('int')
+		y1 = x1[:,0]
+		y2 = x2[:,0]
+		y3 = x3[:,0]
+		np.save('./data/'+filename+'Q1_4x1.npy',x1[:-1,:])
+		np.save('./data/'+filename+'Q1_4x2.npy',x2[:-1,:])
+		np.save('./data/'+filename+'Q1_4x3.npy',x3[:-1,:])
+		np.save('./data/'+filename+'Q1_4y1.npy',y1[1:])
+		np.save('./data/'+filename+'Q1_4y2.npy',y2[1:])
+		np.save('./data/'+filename+'Q1_4y3.npy',y3[1:])
+		#print(x,y,x.shape,y.shape)
+		return np.load('./data/'+filename+'Q1_4x1.npy'),np.load('./data/'+filename+'Q1_4y1.npy'),np.load('./data/'+filename+'Q1_4x2.npy'),np.load('./data/'+filename+'Q1_4y2.npy'),np.load('./data/'+filename+'Q1_4x3.npy'),np.load('./data/'+filename+'Q1_4y3.npy')
 
 def test(filename):
 	x = OrderedDict()
