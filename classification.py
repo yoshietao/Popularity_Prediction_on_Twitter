@@ -123,7 +123,7 @@ def svm_analysis(X_train, y_train, X_test, y_test, class_names):
     print('###########################')
     print('Support Vector Machine: ')
     print('###########################')
-    svm_clf = svm.SVC(C=1000, probability=True)
+    svm_clf = svm.SVC(C=1000, kernel='linear', probability=True)
     svm_clf.fit(X_train, y_train)
     y_pred = svm_clf.predict(X_test)
     y_pred_proba = svm_clf.predict_proba(X_test)
@@ -143,7 +143,16 @@ def rf_analysis(X_train, y_train, X_test, y_test, class_names):
     print('###########################')
     print('Random Forest: ')
     print('###########################')
-    rf_clf = RandomForestClassifier(max_depth=20, random_state=42)
+    acc_best, depth_best = -1, -1
+    for d in range(10, 51, 10):
+        rf_clf = RandomForestClassifier(max_depth=d, random_state=42)
+        acc = cross_val_score(rf_clf, X_train, y_train, cv=5, scoring='accuracy')
+        if acc.mean() > acc_best:
+            acc_best = acc.mean()
+            depth_best = d
+    print('Best max_depth: ', depth_best)
+    print('Best validation acc: ', acc_best)
+    rf_clf = RandomForestClassifier(max_depth=depth_best, random_state=42)
     rf_clf.fit(X_train, y_train)
     y_pred = rf_clf.predict(X_test)
     y_pred_proba = rf_clf.predict_proba(X_test)
@@ -186,10 +195,10 @@ def main():
     X_test_tf_nmf = nmf.transform(X_test_tf)
     '''
     class_names = ['Washington', 'Massachusetts']
-    svm_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-    log_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    #svm_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    #log_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
     rf_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-    mlp_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    #mlp_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
     
 if __name__ == "__main__":
     main()
