@@ -180,6 +180,31 @@ def load_q1_4(filename):
 		#print(x,y,x.shape,y.shape)
 		return np.load('./data/'+filename+'Q1_4x1.npy'),np.load('./data/'+filename+'Q1_4y1.npy'),np.load('./data/'+filename+'Q1_4x2.npy'),np.load('./data/'+filename+'Q1_4y2.npy'),np.load('./data/'+filename+'Q1_4x3.npy'),np.load('./data/'+filename+'Q1_4y3.npy')
 
+def load_q1_4_2():
+
+	x1,y1 = stack_data('1')
+	x2,y2 = stack_data('2')
+	x3,y3 = stack_data('3')
+
+	return x1,y1,x2,y2,x3,y3
+
+def stack_data(n):
+	x1 = np.load('./data/tweets_#gohawksQ1_4x'+n+'.npy')
+	x2 = np.load('./data/tweets_#gopatriotsQ1_4x'+n+'.npy')
+	x3 = np.load('./data/tweets_#nflQ1_4x'+n+'.npy')
+	x4 = np.load('./data/tweets_#patriotsQ1_4x'+n+'.npy')
+	x5 = np.load('./data/tweets_#sb49Q1_4x'+n+'.npy')
+	x6 = np.load('./data/tweets_#superbowlQ1_4x'+n+'.npy')
+
+	y1 = np.load('./data/tweets_#gohawksQ1_4y'+n+'.npy')
+	y2 = np.load('./data/tweets_#gopatriotsQ1_4y'+n+'.npy')
+	y3 = np.load('./data/tweets_#nflQ1_4y'+n+'.npy')
+	y4 = np.load('./data/tweets_#patriotsQ1_4y'+n+'.npy')
+	y5 = np.load('./data/tweets_#sb49Q1_4y'+n+'.npy')
+	y6 = np.load('./data/tweets_#superbowlQ1_4y'+n+'.npy')
+
+	return np.vstack((x1,x2,x3,x4,x5,x6)), np.hstack((y1,y2,y3,y4,y5,y6))
+
 def test(filename):
 	x = OrderedDict()
 	for i in range(14,32):

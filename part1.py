@@ -68,7 +68,6 @@ def k_fold_rmse(model,x,y):
 		rmse_test  += mean_squared_error(y_test,y_test_pred)
 		mae_test   += mean_absolute_error(y_test,y_test_pred)
 	print ((rmse_test/10)**0.5,mae_test/10)
-	return (rmse_test/10)**0.5
 
 def predict_period(x,y):
 	lrm = LinearRegression(fit_intercept=True, normalize=False)
@@ -86,9 +85,12 @@ def q1_4(filename):
 
 def q1_4_2():
 	d1x, d1y, d2x, d2y, d3x, d3y = func.load_q1_4_2()
-	k_fold_rmse(d1x,d1y)
-	k_fold_rmse(d2x,d2y)
-	k_fold_rmse(d3x,d3y)
+	print(d1x.shape,d1y.shape)
+	lrm = LinearRegression(fit_intercept=True, normalize=False)
+	rf = RandomForestClassifier()
+	k_fold_rmse(rf,d1x,d1y)
+	k_fold_rmse(rf,d2x,d2y)
+	k_fold_rmse(lrm,d3x,d3y)
 
 def Q1_3():
 	d_nfl = func.load_q1_3('tweets_#nfl')
@@ -97,12 +99,12 @@ def Q1_3():
 	q2([d_superbowl[0],d_superbowl[1]],[0,2,3])
 
 def Q1_4():
-	q1_4('tweets_#gohawks')
-	q1_4('tweets_#gopatriots')
-	q1_4('tweets_#nfl')
-	q1_4('tweets_#patriots')
-	q1_4('tweets_#sb49')
-	q1_4('tweets_#superbowl')
+	#q1_4('tweets_#gohawks')
+	#q1_4('tweets_#gopatriots')
+	#q1_4('tweets_#nfl')
+	#q1_4('tweets_#patriots')
+	#q1_4('tweets_#sb49')
+	#q1_4('tweets_#superbowl')
 	q1_4_2()
 
 def main():
