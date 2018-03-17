@@ -188,6 +188,73 @@ def load_q1_4_2():
 
 	return x1,y1,x2,y2,x3,y3
 
+def load_q1_5(filename):
+	if Path('./data/'+filename+'Q1_5x.npy').exists():
+		print('Already have Q1_5 data.')
+		return np.load('./data/'+filename+'Q1_5x.npy'),np.load('./data/'+filename+'Q1_5y.npy')
+	else:
+		print('Parsing Q1_5 data...')
+		if not Path('./data').exists():
+			print('Making directory: data/')
+			os.makedirs('./data')
+		x = OrderedDict()
+		y = OrderedDict()
+		for i in range(14,32):
+			for j in range(24):
+				x['01-'+str(i)+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
+		for i in range(1,7):
+			for j in range(24):
+				x['02-'+'{0:02d}'.format(i)+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
+		for j in range(11):
+			x['02-07'+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
+		with open(filename+'.txt') as data:
+			for line in data:
+				line = json.loads(line)
+				index = datetime.datetime.fromtimestamp(line['citation_date'], pst_tz).strftime('%Y-%m-%d %H:%M:%S')[5:13]
+				x[index][0] += 1
+				x[index][1] += int(line['metrics']['citations']['total'])
+				x[index][2] += float(line['author']['followers'])
+				if float(line['author']['followers']) > x[index][3]:
+					x[index][3] = float(line['author']['followers'])
+		x = np.array(list(x.values())).astype('int')
+		y = x[:,0]
+		np.save('./data/'+filename+'Q1_5x.npy',x[:-1,:])
+		#np.save('./data/'+filename+'Q1_5y.npy',y[1:])
+		print(x,y,x.shape,y.shape)
+		return np.load('./data/'+filename+'Q1_5x.npy'), np.load('./data/'+filename+'Q1_5y.npy')
+
+def load_q1_5_stack():
+	#period 1
+	ds1x = np.load('./data/sample1_period1Q1_5x.npy')
+	ds4x = np.load('./data/sample4_period1Q1_5x.npy')
+	ds5x = np.load('./data/sample5_period1Q1_5x.npy')
+	ds8x = np.load('./data/sample8_period1Q1_5x.npy')
+
+	ds1y = np.load('./data/sample1_period1Q1_5y.npy')
+	ds4y = np.load('./data/sample4_period1Q1_5y.npy')
+	ds5y = np.load('./data/sample5_period1Q1_5y.npy')
+	ds8y = np.load('./data/sample8_period1Q1_5y.npy')
+
+	#period 2
+	ds2x = np.load('./data/sample2_period2Q1_5x.npy')
+	ds6x = np.load('./data/sample6_period2Q1_5x.npy')
+	ds9x = np.load('./data/sample9_period2Q1_5x.npy')
+
+	ds2y = np.load('./data/sample2_period2Q1_5y.npy')
+	ds6y = np.load('./data/sample6_period2Q1_5y.npy')
+	ds9y = np.load('./data/sample9_period2Q1_5y.npy')
+
+	#period 3
+	ds3x = np.load('./data/sample3_period3Q1_5x.npy')
+	ds7x = np.load('./data/sample7_period3Q1_5x.npy')
+	ds10x = np.load('./data/sample10_period3Q1_5x.npy')
+
+	ds3y = np.load('./data/sample3_period3Q1_5y.npy')
+	ds7y = np.load('./data/sample7_period3Q1_5y.npy')
+	ds10y = np.load('./data/sample10_period3Q1_5y.npy')
+
+	return np.vstack((ds1x, ds4x, ds5x, ds8x)), np.hstack((ds1y, ds4y, ds5y, ds8y)), np.vstack((ds2x, ds6x, ds9x)), np.hstack((ds2y, ds6y, ds9y)), np.vstack((ds3x, ds7x, ds10x)), np.hstack((ds3y, ds7y, ds10y))
+
 def stack_data(n):
 	x1 = np.load('./data/tweets_#gohawksQ1_4x'+n+'.npy')
 	x2 = np.load('./data/tweets_#gopatriotsQ1_4x'+n+'.npy')
