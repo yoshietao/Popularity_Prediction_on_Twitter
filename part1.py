@@ -107,11 +107,37 @@ def Q1_4():
 	#q1_4('tweets_#superbowl')
 	q1_4_2()
 
+def q1_5():
+	ds1p1x, ds1p1y = func.load_q1_5('sample1_period1')
+	ds2p2x, ds2p2y = func.load_q1_5('sample2_period2')
+	ds3p3x, ds3p3y = func.load_q1_5('sample3_period3')
+	ds4p1x, ds4p1y = func.load_q1_5('sample4_period1')
+	ds5p1x, ds5p1y = func.load_q1_5('sample5_period1')
+	ds6p2x, ds6p2y = func.load_q1_5('sample6_period2')
+	ds7p3x, ds7p3y = func.load_q1_5('sample7_period3')
+	ds8p1x, ds8p1y = func.load_q1_5('sample8_period1')
+	ds9p2x, ds9p2y = func.load_q1_5('sample9_period2')
+	ds10p3x, ds10p3y = func.load_q1_5('sample10_period3')
+
+	dp1x, dp1y, dp2x, dp2y, dp3x, dp3y = func.load_q1_5_stack()
+
+	predict_period(dp1x,dp1y)
+	predict_period(dp2x,dp2y)
+	predict_period(dp3x,dp3y)
+
+	#TODO: try different models 
+
+
+def Q1_5():
+	q1_5()
+
+
 def main():
 	#Q1_1()
 	#Q1_2()
 	#Q1_3()
-	Q1_4()
+	#Q1_4()
+	Q1_5()
 
 
 if __name__ == '__main__':
