@@ -25,6 +25,8 @@ from string import punctuation
 import collections
 import itertools
 import os
+import re
+from random import randint
 ###########################
 # Define Functions
 ###########################
@@ -51,10 +53,10 @@ def generate_X_y(filename, recreate=False):
                     #print(location)
                 if location.find('Washington') is not -1 or location.find('WA') is not -1 or location.find('Seattle') is not -1:
                     X_list.append(text)
-                    y_list.append(0.)
+                    y_list.append(0)
                 elif location.find('Massachusetts') is not -1 or location.find('MA') is not -1 or location.find('Boston') is not -1:
                     X_list.append(text)
-                    y_list.append(1.)
+                    y_list.append(1)
                     counter += 1
         print('size of WA data: ', len(y_list) - counter)
         print('size of MA data: ', counter)
@@ -211,14 +213,96 @@ def mlp_analysis(X_train, y_train, X_test, y_test, class_names):
     y_pred_proba = mlp_clf.predict_proba(X_test)
     report_results(y_test, y_pred, y_pred_proba, class_names)
 
+def preprocess(X):
+    for i in range(len(X)):
+        regex = re.compile('[%s]' % re.escape(punctuation))
+        X[i] = regex.sub(' ',X[i]).lower()
+    return X
 ###########################
 # Main
 ###########################
 def main():
     print('starting part 2...')
+    class_names = ['Washington', 'Massachusetts']
     X, y = generate_X_y('tweets_#superbowl', False)
-    
+    X = preprocess(X)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
+    sum_ = 0.
+    y_pred = []
+    central = 0.
+    h_m = 0.
+    h_w = 0.
+    p_m = 0.
+    p_w = 0.
+    counter = 0
+    w = 0.
+    a,b,c,d=0,0,0,0
+    '''
+    for i in range(len(X)):
+        #if counter > 1000:
+            #    break
+        #if y[i] == 1:
+        #    print(X[i])
+        counter += 1
+        if y[i] == 0:
+            w += 1.
+        if (X[i].find('hawk') is -1 and X[i].find('pat') is not -1) and y[i] == 1:
+             p_m += 1. 
+        if (X[i].find('hawk') is -1 and X[i].find('pat') is not -1) and y[i] == 0:
+            p_w += 1.
+        if (X[i].find('hawk') is not -1 and X[i].find('pat') is -1) and y[i] == 1:
+            h_m += 1.
+        if (X[i].find('hawk') is not -1 and X[i].find('pat') is -1) and y[i] == 0:
+            h_w += 1.
+        if (X[i].find('hawk') is -1 and X[i].find('pat') is -1) and y[i] == 1:
+            a += 1.
+             #if X[i].find('boston') is not -1:
+                 #a += 1.
+                #print('************************: ', i)
+                #print(X[i])
+        if (X[i].find('hawk') is -1 and X[i].find('pat') is -1) and y[i] == 0:
+            b += 1.
+            print(X[i])
+            #if X[i].find('seattle') is not -1:
+                #b += 1.
+                #print('************************: ', i)
+                #print(X[i])
+        if (X[i].find('hawk') is not -1 and X[i].find('pat') is not -1) and y[i] == 1:
+            c += 1.
+        if (X[i].find('hawk') is not -1 and X[i].find('pat') is not -1) and y[i] == 0:
+            d += 1.
+
+    print('WA portion: ', w/len(X))
+    print('Patriots from MA: ', p_m/len(X))
+    print('Patriots from WA: ', p_w/len(X))
+    print('Gohawks from MA: ', h_m/len(X))
+    print('Gohawks from WA: ', h_w/len(X))
+    print('None from MA: ', a/len(X))
+    print('None from WA: ', b/len(X))
+    print('Both from MA: ', c/len(X))
+    print('Both from WA: ', d/len(X))
+    print((p_m+p_w+h_m+h_w+a+b+c+d)/len(X))
+    '''
+    for i in range(len(X_test)):
+        s = randint(0, 1)
+        #print(s)
+        if X_test[i].find('hawk') is not -1:
+            s = 0
+        if X_test[i].find('pat') is not -1:
+            s = 1
+        if y_test[i] == s:
+            sum_ += 1.
+        y_pred.append(s)
+    print('Accuracy: ', metrics.accuracy_score(y_test, y_pred))
+    print('Recall: ', metrics.recall_score(y_test, y_pred))
+    print('Precisoin: ', metrics.precision_score(y_test, y_pred))
+    # plot confusion matrix
+    print('Plot Confusion Matrix')
+    cm = metrics.confusion_matrix(y_test, y_pred)
+    plot_confusion_matrix(cm, class_names=class_names)
+    
+    '''
+
     # create TFxIDF vector representations
     vectorizer = generate_vectorizer(min_df=5)
     X_train_counts = vectorizer.fit_transform(X_train)
@@ -228,11 +312,11 @@ def main():
 
     X_train_tf = tf_transformer.fit_transform(X_train_counts)
     X_test_tf = tf_transformer.transform(X_test_counts)
-    '''
+    
     svd = TruncatedSVD(n_components=50, algorithm='randomized', n_iter=10, random_state=42)
     X_train_tf_svd = svd.fit_transform(X_train_tf)
     X_test_tf_svd = svd.transform(X_test_tf)
-    '''
+    
     nmf = NMF(n_components=50, init='random', random_state=42)
     X_train_tf_nmf = nmf.fit_transform(X_train_tf)
     X_test_tf_nmf = nmf.transform(X_test_tf)
@@ -244,13 +328,12 @@ def main():
     #X_test_tf_nmf[X_test_tf_nmf == 0.0] = 10**-3
     X_test_tf_nmf_log = scaler.fit_transform(X_test_tf_nmf)
 
-    class_names = ['Washington', 'Massachusetts']
     #svd_selection(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
     #svm_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
     log_analysis(X_train_tf_nmf_log, y_train, X_test_tf_nmf_log, y_test, class_names, False, True)
     #rf_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
     #mlp_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-    
+    '''
 if __name__ == "__main__":
     main()
 
