@@ -1,6 +1,7 @@
 import func
 from collections import OrderedDict
 import numpy as np
+import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import shuffle
 from sklearn.metrics import mean_squared_error, mean_absolute_error
@@ -67,11 +68,19 @@ def k_fold_rmse(model,x,y):
 		y_test_pred  = model.predict(X_test)
 		rmse_test  += mean_squared_error(y_test,y_test_pred)
 		mae_test   += mean_absolute_error(y_test,y_test_pred)
-	print ((rmse_test/10)**0.5,mae_test/10)
+	print ("RMSE: ", (rmse_test/10)**0.5, "MAE: ", mae_test/10)
 
 def predict_period(x,y):
 	lrm = LinearRegression(fit_intercept=True, normalize=False)
 	k_fold_rmse(lrm,x,y)
+	
+	'''
+	lrm = lrm.fit(x, y)
+	y_pred = lrm.predict(x)
+	df = pd.DataFrame({'Actual': sum(y), 'Predict': sum(y_pred)})
+	print (df)
+	'''
+
 	svm = SVC()
 	k_fold_rmse(svm,x,y)
 	rf = RandomForestClassifier()
@@ -99,34 +108,56 @@ def Q1_3():
 	q2([d_superbowl[0],d_superbowl[1]],[0,2,3])
 
 def Q1_4():
-	#q1_4('tweets_#gohawks')
+	q1_4('tweets_#gohawks')
 	#q1_4('tweets_#gopatriots')
 	#q1_4('tweets_#nfl')
 	#q1_4('tweets_#patriots')
 	#q1_4('tweets_#sb49')
 	#q1_4('tweets_#superbowl')
-	q1_4_2()
+	#q1_4_2()
 
+def q1_5_1(filename):
+	x, y = func.load_q1_5(filename)
+
+	'''
+	print ("For ", filename)
+	dx1, dy1, dx2, dy2, dx3, dy3, dx4, dy4, dx5, dy5, dx6, dy6 = func.load_q1_5(filename)
+	print ("First hour: ")
+	predict_period(dx1, dy1)
+	print ("Second hour: ")
+	predict_period(dx2, dy2)
+	print ("Third hour: ")
+	predict_period(dx3, dy3)
+	print ("Fourth hour: ")
+	predict_period(dx4, dy4)
+	print ("Fifth hour: ")
+	predict_period(dx5, dy5)
+	print ("Sixth hour: ")
+	predict_period(dx6, dy6)
+`	'''
 def q1_5():
-	ds1p1x, ds1p1y = func.load_q1_5('sample1_period1')
-	ds2p2x, ds2p2y = func.load_q1_5('sample2_period2')
-	ds3p3x, ds3p3y = func.load_q1_5('sample3_period3')
-	ds4p1x, ds4p1y = func.load_q1_5('sample4_period1')
-	ds5p1x, ds5p1y = func.load_q1_5('sample5_period1')
-	ds6p2x, ds6p2y = func.load_q1_5('sample6_period2')
-	ds7p3x, ds7p3y = func.load_q1_5('sample7_period3')
-	ds8p1x, ds8p1y = func.load_q1_5('sample8_period1')
-	ds9p2x, ds9p2y = func.load_q1_5('sample9_period2')
-	ds10p3x, ds10p3y = func.load_q1_5('sample10_period3')
 
-	dp1x, dp1y, dp2x, dp2y, dp3x, dp3y = func.load_q1_5_stack()
+	q1_5_1('sample1_period1')
+	q1_5_1('sample2_period2')
+	q1_5_1('sample3_period3')
+	q1_5_1('sample4_period1')
+	q1_5_1('sample5_period1')
+	q1_5_1('sample6_period2')
+	q1_5_1('sample7_period3')
+	q1_5_1('sample8_period1')
+	q1_5_1('sample9_period2')
+	q1_5_1('sample10_period3')
 
+	#dp1x, dp1y, dp2x, dp2y, dp3x, dp3y = func.load_q1_5_stack()
+
+	'''
+	print ("Period 1:")
 	predict_period(dp1x,dp1y)
+	print ("Period 2:")
 	predict_period(dp2x,dp2y)
+	print ("Period 3:")
 	predict_period(dp3x,dp3y)
-
-	#TODO: try different models 
-
+	'''
 
 def Q1_5():
 	q1_5()
