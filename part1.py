@@ -95,8 +95,8 @@ def q1_4_2():
 def Q1_3():
 	d_nfl = func.load_q1_3('tweets_#nfl')
 	d_superbowl = func.load_q1_3('tweets_#superbowl')
-	q2([d_nfl[0],d_nfl[1]],[0,2,3])
-	q2([d_superbowl[0],d_superbowl[1]],[0,2,3])
+	q2([d_nfl[0],d_nfl[1]],[0,3,4])
+	q2([d_superbowl[0],d_superbowl[1]],[0,3,4])
 
 def Q1_4():
 	#q1_4('tweets_#gohawks')
@@ -135,7 +135,7 @@ def Q1_5():
 def main():
 	#Q1_1()
 	#Q1_2()
-	#Q1_3()
+	Q1_3()
 	#Q1_4()
 	Q1_5()
 
