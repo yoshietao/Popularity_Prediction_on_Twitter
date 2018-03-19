@@ -73,14 +73,6 @@ def k_fold_rmse(model,x,y):
 def predict_period(x,y):
 	lrm = LinearRegression(fit_intercept=True, normalize=False)
 	k_fold_rmse(lrm,x,y)
-	
-	'''
-	lrm = lrm.fit(x, y)
-	y_pred = lrm.predict(x)
-	df = pd.DataFrame({'Actual': sum(y), 'Predict': sum(y_pred)})
-	print (df)
-	'''
-
 	svm = SVC()
 	k_fold_rmse(svm,x,y)
 	rf = RandomForestClassifier()
@@ -116,57 +108,70 @@ def Q1_4():
 	#q1_4('tweets_#superbowl')
 	#q1_4_2()
 
-def q1_5_1(filename):
-	x, y = func.load_q1_5(filename)
+def q1_5_1(filename, period):
+	x, y = func.load_q1_5(filename, period)
+	print ("=====================")
+	print (filename)
+	print ("=====================")
+	print ("--------Linear Regression-------")
 
-	'''
-	print ("For ", filename)
-	dx1, dy1, dx2, dy2, dx3, dy3, dx4, dy4, dx5, dy5, dx6, dy6 = func.load_q1_5(filename)
-	print ("First hour: ")
-	predict_period(dx1, dy1)
-	print ("Second hour: ")
-	predict_period(dx2, dy2)
-	print ("Third hour: ")
-	predict_period(dx3, dy3)
-	print ("Fourth hour: ")
-	predict_period(dx4, dy4)
-	print ("Fifth hour: ")
-	predict_period(dx5, dy5)
-	print ("Sixth hour: ")
-	predict_period(dx6, dy6)
-`	'''
-def q1_5():
 
-	q1_5_1('sample1_period1')
-	q1_5_1('sample2_period2')
-	q1_5_1('sample3_period3')
-	q1_5_1('sample4_period1')
-	q1_5_1('sample5_period1')
-	q1_5_1('sample6_period2')
-	q1_5_1('sample7_period3')
-	q1_5_1('sample8_period1')
-	q1_5_1('sample9_period2')
-	q1_5_1('sample10_period3')
+	for i in range(0, len(x)):
+		x_train, y_train = [], []
+		for j in range(0, len(x)):
+			if i != j:
+				x_train.append(x[j])
+				y_train.append(y[j])
+		model = LinearRegression(fit_intercept=True, normalize=False)		
+		model = model.fit(x_train, y_train)
+		x_test = [x[i]]
+		y_pred = model.predict(x_test)
+		print (i, y_pred, x[i][0], y_pred-x[i][0])
 
-	#dp1x, dp1y, dp2x, dp2y, dp3x, dp3y = func.load_q1_5_stack()
+	print ("--------SVM--------")
+	for i in range(0, len(x)):
+		x_train, y_train = [], []
+		for j in range(0, len(x)):
+			if i != j:
+				x_train.append(x[j])
+				y_train.append(y[j])
+		model = SVC()	
+		model = model.fit(x_train, y_train)
+		x_test = [x[i]]
+		y_pred = model.predict(x_test)
+		print (i, y_pred, x[i][0], y_pred-x[i][0])
 
-	'''
-	print ("Period 1:")
-	predict_period(dp1x,dp1y)
-	print ("Period 2:")
-	predict_period(dp2x,dp2y)
-	print ("Period 3:")
-	predict_period(dp3x,dp3y)
-	'''
+	print ("--------Random Forest--------")
+	for i in range(0, len(x)):
+		x_train, y_train = [], []
+		for j in range(0, len(x)):
+			if i != j:
+				x_train.append(x[j])
+				y_train.append(y[j])
+		model = RandomForestClassifier()
+		model = model.fit(x_train, y_train)
+		x_test = [x[i]]
+		y_pred = model.predict(x_test)
+		print (i, y_pred, x[i][0], y_pred-x[i][0])
 
 def Q1_5():
-	q1_5()
+
+	q1_5_1('sample1_period1', 1)
+	q1_5_1('sample2_period2', 2)
+	q1_5_1('sample3_period3', 3)
+	q1_5_1('sample4_period1', 1)
+	q1_5_1('sample5_period1', 1)
+	q1_5_1('sample6_period2', 2)
+	q1_5_1('sample7_period3', 3)
+	q1_5_1('sample8_period1', 1)
+	q1_5_1('sample9_period2', 2)
+	q1_5_1('sample10_period3', 3)
 
 
 def main():
 	#Q1_1()
 	#Q1_2()
-	Q1_3()
+	#Q1_3()
 	#Q1_4()
 	Q1_5()
 
