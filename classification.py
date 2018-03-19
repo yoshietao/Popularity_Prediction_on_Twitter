@@ -40,7 +40,7 @@ def generate_X_y(filename, recreate=False):
         print('create data...')
         X_list, y_list = [], []
         counter = 0
-        with open(filename+'.txt') as data:
+        with open('../tweet_data/'+filename+'.txt') as data:
             for line in data:
                 line = json.loads(line)
                 text = line['title']
@@ -158,7 +158,7 @@ def svm_analysis(X_train, y_train, X_test, y_test, class_names):
     y_pred_proba = svm_clf.predict_proba(X_test)
     report_results(y_test, y_pred, y_pred_proba, class_names)
 
-def log_analysis(X_train, y_train, X_test, y_test, class_names, optimize=False, report=False):
+def log_analysis(X_train, y_train, X_test, y_test, class_names, optimize=False):
     print('###########################')
     print('Logistic Regression: ')
     print('###########################')
@@ -178,25 +178,23 @@ def log_analysis(X_train, y_train, X_test, y_test, class_names, optimize=False, 
     log_clf.fit(X_train, y_train)
     y_pred = log_clf.predict(X_test)
     y_pred_proba = log_clf.predict_proba(X_test)
-    if report:
-        report_results(y_test, y_pred, y_pred_proba, class_names)
-    else:
-        return metrics.accuracy_score(y_test, y_pred)
+    report_results(y_test, y_pred, y_pred_proba, class_names)
 
-
-def rf_analysis(X_train, y_train, X_test, y_test, class_names):
+def rf_analysis(X_train, y_train, X_test, y_test, class_names, optimize=False):
     print('###########################')
     print('Random Forest: ')
     print('###########################')
-    acc_best, depth_best = -1, -1
-    for d in range(10, 51, 10):
-        rf_clf = RandomForestClassifier(max_depth=d, random_state=42)
-        acc = cross_val_score(rf_clf, X_train, y_train, cv=10, scoring='accuracy')
-        if acc.mean() > acc_best:
-            acc_best = acc.mean()
-            depth_best = d
-    print('Best max_depth: ', depth_best)
-    print('Best validation acc: ', acc_best)
+    acc_best, depth_best = -1, 10
+    if optimize:
+        for d in range(5, 51, 10):
+            rf_clf = RandomForestClassifier(max_depth=d, random_state=42)
+            acc = cross_val_score(rf_clf, X_train, y_train, cv=10, scoring='accuracy')
+            if acc.mean() > acc_best:
+                acc_best = acc.mean()
+                depth_best = d
+        print('Best max_depth: ', depth_best)
+        print('Best validation acc: ', acc_best)
+
     rf_clf = RandomForestClassifier(max_depth=depth_best, random_state=42)
     rf_clf.fit(X_train, y_train)
     y_pred = rf_clf.predict(X_test)
@@ -218,14 +216,23 @@ def preprocess(X):
         regex = re.compile('[%s]' % re.escape(punctuation))
         X[i] = regex.sub(' ',X[i]).lower()
     return X
-###########################
-# Main
-###########################
-def main():
-    print('starting part 2...')
-    class_names = ['Washington', 'Massachusetts']
-    X, y = generate_X_y('tweets_#superbowl', False)
-    X = preprocess(X)
+
+def noise_reduce(X, y):
+    del_list = []
+    for i in range(len(X)):
+        if X[i].find('hawk') is -1 and X[i].find('patriot') is -1:
+            del_list.append(i)
+    X = np.delete(X, del_list, 0)
+    y = np.delete(y, del_list, 0)
+    return X, y
+
+def random_reduce(X, y):
+    del_list = list(np.random.choice(len(X), 27990, replace=False))
+    X = np.delete(X, del_list, 0)
+    y = np.delete(y, del_list, 0)
+    return X, y
+
+def baseline(X, y, class_names):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
     sum_ = 0.
     y_pred = []
@@ -237,41 +244,29 @@ def main():
     counter = 0
     w = 0.
     a,b,c,d=0,0,0,0
-    '''
+    
     for i in range(len(X)):
-        #if counter > 1000:
-            #    break
-        #if y[i] == 1:
-        #    print(X[i])
         counter += 1
         if y[i] == 0:
             w += 1.
-        if (X[i].find('hawk') is -1 and X[i].find('pat') is not -1) and y[i] == 1:
+        if (X[i].find('hawk') is -1 and X[i].find('patriot') is not -1) and y[i] == 1:
              p_m += 1. 
-        if (X[i].find('hawk') is -1 and X[i].find('pat') is not -1) and y[i] == 0:
+        elif (X[i].find('hawk') is -1 and X[i].find('patriot') is not -1) and y[i] == 0:
             p_w += 1.
-        if (X[i].find('hawk') is not -1 and X[i].find('pat') is -1) and y[i] == 1:
+        elif (X[i].find('hawk') is not -1 and X[i].find('patriot') is -1) and y[i] == 1:
             h_m += 1.
-        if (X[i].find('hawk') is not -1 and X[i].find('pat') is -1) and y[i] == 0:
+        elif (X[i].find('hawk') is not -1 and X[i].find('patriot') is -1) and y[i] == 0:
             h_w += 1.
-        if (X[i].find('hawk') is -1 and X[i].find('pat') is -1) and y[i] == 1:
+        elif (X[i].find('hawk') is -1 and X[i].find('patriot') is -1) and y[i] == 1:
             a += 1.
-             #if X[i].find('boston') is not -1:
-                 #a += 1.
-                #print('************************: ', i)
-                #print(X[i])
-        if (X[i].find('hawk') is -1 and X[i].find('pat') is -1) and y[i] == 0:
+            #print(X[i])
+        elif (X[i].find('hawk') is -1 and X[i].find('patriot') is -1) and y[i] == 0:
             b += 1.
-            print(X[i])
-            #if X[i].find('seattle') is not -1:
-                #b += 1.
-                #print('************************: ', i)
-                #print(X[i])
-        if (X[i].find('hawk') is not -1 and X[i].find('pat') is not -1) and y[i] == 1:
+            #print(X[i])
+        elif (X[i].find('hawk') is not -1 and X[i].find('patriot') is not -1) and y[i] == 1:
             c += 1.
-        if (X[i].find('hawk') is not -1 and X[i].find('pat') is not -1) and y[i] == 0:
+        elif (X[i].find('hawk') is not -1 and X[i].find('patriot') is not -1) and y[i] == 0:
             d += 1.
-
     print('WA portion: ', w/len(X))
     print('Patriots from MA: ', p_m/len(X))
     print('Patriots from WA: ', p_w/len(X))
@@ -282,13 +277,13 @@ def main():
     print('Both from MA: ', c/len(X))
     print('Both from WA: ', d/len(X))
     print((p_m+p_w+h_m+h_w+a+b+c+d)/len(X))
-    '''
+    
     for i in range(len(X_test)):
         s = randint(0, 1)
-        #print(s)
+       
         if X_test[i].find('hawk') is not -1:
             s = 0
-        if X_test[i].find('pat') is not -1:
+        if X_test[i].find('patriot') is not -1:
             s = 1
         if y_test[i] == s:
             sum_ += 1.
@@ -300,9 +295,20 @@ def main():
     print('Plot Confusion Matrix')
     cm = metrics.confusion_matrix(y_test, y_pred)
     plot_confusion_matrix(cm, class_names=class_names)
-    
-    '''
 
+###########################
+# Main
+###########################
+def main():
+    print('starting part 2...')
+    class_names = ['Washington', 'Massachusetts']
+    X, y = generate_X_y('tweets_#superbowl', True)
+    #X = preprocess(X)
+    #X, y = noise_reduce(X, y)
+    #baseline(X,y, class_names)
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
+    
     # create TFxIDF vector representations
     vectorizer = generate_vectorizer(min_df=5)
     X_train_counts = vectorizer.fit_transform(X_train)
@@ -316,24 +322,13 @@ def main():
     svd = TruncatedSVD(n_components=50, algorithm='randomized', n_iter=10, random_state=42)
     X_train_tf_svd = svd.fit_transform(X_train_tf)
     X_test_tf_svd = svd.transform(X_test_tf)
-    
-    nmf = NMF(n_components=50, init='random', random_state=42)
-    X_train_tf_nmf = nmf.fit_transform(X_train_tf)
-    X_test_tf_nmf = nmf.transform(X_test_tf)
-
-    scaler = StandardScaler(with_mean=False, with_std=True)
-
-    #X_train_tf_nmf[X_train_tf_nmf == 0.0] = 10**-3
-    X_train_tf_nmf_log = scaler.fit_transform(X_train_tf_nmf)
-    #X_test_tf_nmf[X_test_tf_nmf == 0.0] = 10**-3
-    X_test_tf_nmf_log = scaler.fit_transform(X_test_tf_nmf)
 
     #svd_selection(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-    #svm_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-    log_analysis(X_train_tf_nmf_log, y_train, X_test_tf_nmf_log, y_test, class_names, False, True)
-    #rf_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-    #mlp_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
-    '''
+    svm_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)
+    log_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names, True)
+    rf_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names, True)
+    mlp_analysis(X_train_tf_svd, y_train, X_test_tf_svd, y_test, class_names)  
+    
 if __name__ == "__main__":
     main()
 

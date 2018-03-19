@@ -14,6 +14,7 @@ from sklearn.ensemble import RandomForestClassifier
 def Q1_1():
 	d_nfl = func.load_q1_1('tweets_#nfl')
 	d_superbowl = func.load_q1_1('tweets_#superbowl')
+	print(d_nfl)
 	q1_1(d_nfl)
 	q1_1(d_superbowl)
 
@@ -68,7 +69,12 @@ def k_fold_rmse(model,x,y):
 		y_test_pred  = model.predict(X_test)
 		rmse_test  += mean_squared_error(y_test,y_test_pred)
 		mae_test   += mean_absolute_error(y_test,y_test_pred)
+<<<<<<< HEAD
 	print ("RMSE: ", (rmse_test/10)**0.5, "MAE: ", mae_test/10)
+=======
+	print('RMSE is ', (rmse_test/10)**0.5)
+	print('MAE is ', mae_test/10)
+>>>>>>> d6baec6f77aec9cf0a532458ff4d5a15f278c909
 
 def predict_period(x,y):
 	lrm = LinearRegression(fit_intercept=True, normalize=False)
@@ -79,6 +85,7 @@ def predict_period(x,y):
 	k_fold_rmse(rf,x,y)
 
 def q1_4(filename):
+	print('Q1_4 is predicting ' + filename + ' ...')
 	d1x, d1y, d2x, d2y, d3x, d3y = func.load_q1_4(filename)
 	predict_period(d1x,d1y)
 	predict_period(d2x,d2y)
@@ -100,13 +107,33 @@ def Q1_3():
 	q2([d_superbowl[0],d_superbowl[1]],[0,3,4])
 
 def Q1_4():
-	q1_4('tweets_#gohawks')
 	#q1_4('tweets_#gopatriots')
 	#q1_4('tweets_#nfl')
 	#q1_4('tweets_#patriots')
 	#q1_4('tweets_#sb49')
 	#q1_4('tweets_#superbowl')
 	#q1_4_2()
+	#q1_4_2()
+
+def Q3():
+	hashtags = ['tweets_#gohawks', 'tweets_#gopatriots', 'tweets_#nfl', 'tweets_#patriots', 'tweets_#sb49', 'tweets_#superbowl']
+
+	for objective in hashtags:
+		empty = True
+		augmented_x1, augmented_x2, augmented_x3 = [], [], []
+		y1, y2, y3 = func.load_q1_4(objective)[1], func.load_q1_4(objective)[3], func.load_q1_4(objective)[5]
+		for other in hashtags:
+			if other != objective:
+				x1, x2, x3 = func.load_q1_4(other)[0], func.load_q1_4(other)[2], func.load_q1_4(other)[4]
+				if empty==True:
+					augmented_x1, augmented_x2, augmented_x3 = x1, x2, x3
+					empty = False
+				else:
+					augmented_x1, augmented_x2, augmented_x3 = np.hstack((augmented_x1, x1)), np.hstack((augmented_x2, x2)), np.hstack((augmented_x3, x3))
+		print('Q3 is predicting ' + objective + ' ...')
+		predict_period(augmented_x1, y1)
+		predict_period(augmented_x2, y2)
+		predict_period(augmented_x3, y3)
 
 def q1_5_1(filename, period):
 	x, y = func.load_q1_5(filename, period)
@@ -114,8 +141,6 @@ def q1_5_1(filename, period):
 	print (filename)
 	print ("=====================")
 	print ("--------Linear Regression-------")
-
-
 	for i in range(0, len(x)):
 		x_train, y_train = [], []
 		for j in range(0, len(x)):
@@ -174,6 +199,9 @@ def main():
 	#Q1_3()
 	#Q1_4()
 	Q1_5()
+
+	Q3()
+
 
 
 if __name__ == '__main__':
