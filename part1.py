@@ -69,12 +69,7 @@ def k_fold_rmse(model,x,y):
 		y_test_pred  = model.predict(X_test)
 		rmse_test  += mean_squared_error(y_test,y_test_pred)
 		mae_test   += mean_absolute_error(y_test,y_test_pred)
-<<<<<<< HEAD
 	print ("RMSE: ", (rmse_test/10)**0.5, "MAE: ", mae_test/10)
-=======
-	print('RMSE is ', (rmse_test/10)**0.5)
-	print('MAE is ', mae_test/10)
->>>>>>> d6baec6f77aec9cf0a532458ff4d5a15f278c909
 
 def predict_period(x,y):
 	lrm = LinearRegression(fit_intercept=True, normalize=False)
@@ -112,8 +107,7 @@ def Q1_4():
 	#q1_4('tweets_#patriots')
 	#q1_4('tweets_#sb49')
 	#q1_4('tweets_#superbowl')
-	#q1_4_2()
-	#q1_4_2()
+	q1_4_2()
 
 def Q3():
 	hashtags = ['tweets_#gohawks', 'tweets_#gopatriots', 'tweets_#nfl', 'tweets_#patriots', 'tweets_#sb49', 'tweets_#superbowl']
@@ -198,9 +192,8 @@ def main():
 	#Q1_2()
 	#Q1_3()
 	#Q1_4()
-	Q1_5()
-
-	Q3()
+	#Q1_5()
+	#Q3()
 
 
 
