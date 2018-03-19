@@ -79,10 +79,29 @@ def load_q3(filename):
 
 def svm_classifier(x, y):
 
-	svm_clf = svm.SVC(C=1000, kernel='linear', probability=True)
+	svm_clf = svm.SVC(C=100, kernel='linear')
 	svm_clf.fit(x, y)
 	y_pred = svm_clf.predict(x)
-	print(metrics.accuracy_score(y, y_pred))
+	print('SVM accuracy: ', metrics.accuracy_score(y, y_pred))
+
+def rf_classifier(x, y, optimize=False):
+    
+    acc_best, depth_best = -1, 10
+    if optimize:
+        for d in range(5, 51, 10):
+            rf_clf = RandomForestClassifier(max_depth=d, random_state=42)
+            acc = cross_val_score(rf_clf, x, y, cv=10, scoring='accuracy')
+            if acc.mean() > acc_best:
+                acc_best = acc.mean()
+                depth_best = d
+        print('Best max_depth: ', depth_best)
+        print('Best validation acc: ', acc_best)
+
+    rf_clf = RandomForestClassifier(max_depth=depth_best, random_state=42)
+    rf_clf.fit(x, y)
+    y_pred = rf_clf.predict(x)
+    print('Random Forest accuracy: ', metrics.accuracy_score(y, y_pred))
+
 
 
 def Q3_extra(filename):
@@ -93,10 +112,11 @@ def Q3_extra(filename):
 	print(np.shape(x1), np.shape(y1), np.shape(x3), np.shape(y3))
 
 	print('accuracy in period 1 is:')
-	svm_classifier(x1, y1)
+	#svm_classifier(x1, y1)
+	rf_classifier(x1, y1, False)
 	print('accuracy in period 3 is:')
 	#svm_classifier(x3, y3)
-
+	rf_classifier(x3, y3, False)
 
 
 def main():
