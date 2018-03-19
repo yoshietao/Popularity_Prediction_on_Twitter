@@ -40,7 +40,7 @@ def generate_X_y(filename, recreate=False):
         print('create data...')
         X_list, y_list = [], []
         counter = 0
-        with open(filename+'.txt') as data:
+        with open('../tweet_data/'+filename+'.txt') as data:
             for line in data:
                 line = json.loads(line)
                 text = line['title']

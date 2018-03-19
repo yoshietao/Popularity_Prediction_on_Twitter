@@ -27,7 +27,7 @@ def load_q1_1(filename):
 			print('Making directory: data/')
 			os.makedirs('./data')
 		d = []
-		with open(filename+'.txt') as data:
+		with open('../tweet_data/'+filename+'.txt') as data:
 			for line in data:
 				line = json.loads(line)
 				d.append([datetime.datetime.fromtimestamp(line['citation_date'], pst_tz).strftime('%Y-%m-%d %H:%M:%S')[5:13], line['author']['followers'], line['metrics']['citations']['total']])
@@ -53,7 +53,7 @@ def load_q1_2(filename):
 				x['02-'+'{0:02d}'.format(i)+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
 		for j in range(11):
 			x['02-07'+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
-		with open(filename+'.txt') as data:
+		with open('../tweet_data/'+filename+'.txt') as data:
 			for line in data:
 				line = json.loads(line)
 				index = datetime.datetime.fromtimestamp(line['citation_date'], pst_tz).strftime('%Y-%m-%d %H:%M:%S')[5:13]
@@ -88,7 +88,7 @@ def load_q1_3(filename):
 				x['02-'+'{0:02d}'.format(i)+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
 		for j in range(11):
 			x['02-07'+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
-		with open(filename+'.txt') as data:
+		with open('../tweet_data/'+filename+'.txt') as data:
 			for line in data:
 				line = json.loads(line)
 				index = datetime.datetime.fromtimestamp(line['citation_date'], pst_tz).strftime('%Y-%m-%d %H:%M:%S')[5:13]
@@ -139,7 +139,7 @@ def load_q1_4(filename):
 				x3['02-'+'{0:02d}'.format(i)+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
 		for j in range(11):
 			x3['02-07'+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
-		with open(filename+'.txt') as data:
+		with open('../tweet_data/'+filename+'.txt') as data:
 			for line in data:
 				line = json.loads(line)
 				index = datetime.datetime.fromtimestamp(line['citation_date'], pst_tz).strftime('%Y-%m-%d %H:%M:%S')[5:13]
