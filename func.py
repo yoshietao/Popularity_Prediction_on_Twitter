@@ -188,40 +188,66 @@ def load_q1_4_2():
 
 	return x1,y1,x2,y2,x3,y3
 
-def load_q1_5(filename):
-	if Path('./data/'+filename+'Q1_5x.npy').exists():
-		print('Already have Q1_5 data.')
-		return np.load('./data/'+filename+'Q1_5x.npy'),np.load('./data/'+filename+'Q1_5y.npy')
-	else:
-		print('Parsing Q1_5 data...')
-		if not Path('./data').exists():
-			print('Making directory: data/')
-			os.makedirs('./data')
-		x = OrderedDict()
-		y = OrderedDict()
-		for i in range(14,32):
-			for j in range(24):
-				x['01-'+str(i)+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
-		for i in range(1,7):
-			for j in range(24):
-				x['02-'+'{0:02d}'.format(i)+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
-		for j in range(11):
-			x['02-07'+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
-		with open(filename+'.txt') as data:
-			for line in data:
-				line = json.loads(line)
-				index = datetime.datetime.fromtimestamp(line['citation_date'], pst_tz).strftime('%Y-%m-%d %H:%M:%S')[5:13]
-				x[index][0] += 1
-				x[index][1] += int(line['metrics']['citations']['total'])
-				x[index][2] += float(line['author']['followers'])
-				if float(line['author']['followers']) > x[index][3]:
-					x[index][3] = float(line['author']['followers'])
-		x = np.array(list(x.values())).astype('int')
-		y = x[:,0]
-		np.save('./data/'+filename+'Q1_5x.npy',x[:-1,:])
-		#np.save('./data/'+filename+'Q1_5y.npy',y[1:])
-		print(x,y,x.shape,y.shape)
-		return np.load('./data/'+filename+'Q1_5x.npy'), np.load('./data/'+filename+'Q1_5y.npy')
+def load_q1_5(filename, period):
+	print('Parsing ', filename, ' Q1_5 data...')
+	if not Path('./data').exists():
+		print('Making directory: data/')
+		os.makedirs('./data')
+	time = OrderedDict()
+	cnt = 0
+	x = OrderedDict()
+	y = OrderedDict()
+
+	for i in range(14,32):
+		for j in range(24):
+			x['01-'+str(i)+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
+	for i in range(1,7):
+		for j in range(24):
+			x['02-'+'{0:02d}'.format(i)+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
+	for j in range(11):
+		x['02-07'+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
+	with open(filename+'.txt') as data:
+		for line in data:
+			line = json.loads(line)
+			index = datetime.datetime.fromtimestamp(line['citation_date'], pst_tz).strftime('%Y-%m-%d %H:%M:%S')[5:13]
+			index1 = int(index[:2])*31*24+int(index[3:5])*24+int(index[6:8])
+			if period == 1:
+				if index1 < 1520:
+					x[index][0] += 1
+					x[index][1] += int(line['metrics']['citations']['total'])
+					x[index][2] += float(line['author']['followers'])
+					x[index][3] += int(line['metrics']['momentum'])
+					if int(line['tweet']['user']['friends_count']) > x[index][4]:
+						x[index][4] = int(line['tweet']['user']['friends_count'])
+			elif period == 3:
+				if index1 > 1532:
+					x[index][0] += 1
+					x[index][1] += int(line['metrics']['citations']['total'])
+					x[index][2] += float(line['author']['followers'])
+					x[index][3] += int(line['metrics']['momentum'])
+					if int(line['tweet']['user']['friends_count']) > x[index][4]:
+						x[index][4] = int(line['tweet']['user']['friends_count'])
+			else:
+				if index1 < 1532:
+					if index1 > 1520:
+						x[index][0] += 1
+						x[index][1] += int(line['metrics']['citations']['total'])
+						x[index][2] += float(line['author']['followers'])
+						x[index][3] += int(line['metrics']['momentum'])
+						if int(line['tweet']['user']['friends_count']) > x[index][4]:
+							x[index][4] = int(line['tweet']['user']['friends_count'])
+
+		x1 = OrderedDict() 
+		for key, value in x.items():
+			if value[0] != 0:
+				x1[key] = value
+
+		x1 = np.array(list(x1.values())).astype('int')
+		y = x1[:,0]
+
+		np.save('./data/'+filename+'Q1_5x.npy',x1[:-1,:])
+		np.save('./data/'+filename+'Q1_5y.npy',y[1:])
+		return x1, y
 
 def load_q1_5_stack():
 	#period 1
