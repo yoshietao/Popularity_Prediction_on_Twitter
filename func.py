@@ -206,7 +206,7 @@ def load_q1_5(filename, period):
 			x['02-'+'{0:02d}'.format(i)+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
 	for j in range(11):
 		x['02-07'+' '+'{0:02d}'.format(j)] = [0,0,0,0,j]
-	with open(filename+'.txt') as data:
+	with open('../tweet_data/'+filename+'.txt') as data:
 		for line in data:
 			line = json.loads(line)
 			index = datetime.datetime.fromtimestamp(line['citation_date'], pst_tz).strftime('%Y-%m-%d %H:%M:%S')[5:13]
@@ -309,7 +309,7 @@ def test(filename):
 	for j in range(11):
 		x['02-07'+' '+'{0:02d}'.format(j)] = [0,0]
 	
-	with open(filename+'.txt') as data:
+	with open('../tweet_data/'+filename+'.txt') as data:
 		for line in data:
 			line = json.loads(line)
 			#print(line['metrics']['impressions'])

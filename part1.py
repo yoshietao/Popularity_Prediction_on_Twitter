@@ -102,11 +102,12 @@ def Q1_3():
 	q2([d_superbowl[0],d_superbowl[1]],[0,3,4])
 
 def Q1_4():
-	#q1_4('tweets_#gopatriots')
-	#q1_4('tweets_#nfl')
-	#q1_4('tweets_#patriots')
-	#q1_4('tweets_#sb49')
-	#q1_4('tweets_#superbowl')
+	q1_4('tweets_#gopatriots')
+	q1_4('tweets_#gohawks')
+	q1_4('tweets_#nfl')
+	q1_4('tweets_#patriots')
+	q1_4('tweets_#sb49')
+	q1_4('tweets_#superbowl')
 	q1_4_2()
 
 def Q3():
@@ -188,12 +189,12 @@ def Q1_5():
 
 
 def main():
-	#Q1_1()
-	#Q1_2()
-	#Q1_3()
-	#Q1_4()
-	#Q1_5()
-	#Q3()
+	Q1_1()
+	Q1_2()
+	Q1_3()
+	Q1_4()
+	Q1_5()
+	Q3()
 
 
 
